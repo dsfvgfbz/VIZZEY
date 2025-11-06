@@ -1,4 +1,3 @@
-
 import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { StateService } from '../../services/state.service';
@@ -21,12 +20,6 @@ export class SidePanelComponent {
 
   activeSavedTab = 'liked'; // 'liked' or 'bookmarked'
   
-  readonly allInfluences = [
-    'Sustainability', 'Technology', 'Innovation', 'Minimalism', 'Urbanism',
-    'Social Impact', 'Global Culture', 'Heritage', 'Biophilic Design', 
-    'Brutalism', 'Interior Design', 'Wellbeing'
-  ];
-
   constructor() {
     this.dailyVizzeyService.generateDailyVizzey();
   }

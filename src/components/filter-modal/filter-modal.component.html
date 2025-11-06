@@ -1,48 +1,80 @@
-
-@if (stateService.isFilterModalOpen()) {
-  <div @fade class="absolute inset-0 bg-black/80 z-40 flex flex-col justify-center items-center p-4" (click)="stateService.toggleFilterModal()">
-    <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-md" (click)="$event.stopPropagation()">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold">Search & Filter</h2>
-        <button (click)="stateService.toggleFilterModal()" class="p-2 rounded-full hover:bg-white/10">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
-      </div>
-
-      <div class="relative mb-4">
-        <input 
-          #searchInput
-          type="text" 
-          [value]="searchText()"
-          (input)="searchText.set(searchInput.value)"
-          (keydown.enter)="performSearch()"
-          placeholder="e.g., sustainable architecture in Japan" 
-          class="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-sky-500"
-        >
-      </div>
-
-      <div class="flex flex-col space-y-3">
-        <button 
-          (click)="performSearch()"
-          [disabled]="geminiService.isSearching()"
-          class="w-full bg-sky-600 hover:bg-sky-500 font-bold py-3 rounded-lg transition-colors disabled:bg-sky-800 disabled:cursor-not-allowed flex justify-center items-center"
-        >
-            @if (geminiService.isSearching()) {
-                <app-loader size="sm"></app-loader>
-            } @else {
-                <span>Search Web</span>
-            }
-        </button>
-        <button 
-            (click)="resetFeed()" 
-            class="w-full bg-gray-700 hover:bg-gray-600 font-bold py-3 rounded-lg transition-colors"
-        >
-            Reset to Your Feed
-        </button>
-      </div>
-       @if (geminiService.searchError(); as error) {
-        <p class="text-red-400 text-sm mt-4 text-center">{{ error }}</p>
-      }
+<div 
+  class="absolute inset-0 bg-black/80 z-40 flex flex-col justify-center items-center p-4 transition-opacity duration-300 ease-in-out"
+  [class.opacity-100]="stateService.isFilterModalOpen()"
+  [class.opacity-0]="!stateService.isFilterModalOpen()"
+  [class.pointer-events-auto]="stateService.isFilterModalOpen()"
+  [class.pointer-events-none]="!stateService.isFilterModalOpen()"
+  (click)="stateService.toggleFilterModal()">
+  <div 
+    class="bg-gray-900 rounded-2xl p-6 w-full max-w-md transition-all duration-300 ease-in-out"
+    [class.opacity-100]="stateService.isFilterModalOpen()"
+    [class.opacity-0]="!stateService.isFilterModalOpen()"
+    [class.scale-100]="stateService.isFilterModalOpen()"
+    [class.scale-95]="!stateService.isFilterModalOpen()"
+    (click)="$event.stopPropagation()">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Search & Filter</h2>
+      <button (click)="stateService.toggleFilterModal()" class="p-2 rounded-full hover:bg-white/10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
     </div>
+
+    <div class="relative mb-4">
+      <input 
+        #searchInput
+        type="text" 
+        [value]="searchText()"
+        (input)="searchText.set(searchInput.value)"
+        (keydown.enter)="performSearch()"
+        placeholder="e.g., sustainable architecture in Japan" 
+        class="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-sky-500"
+      >
+    </div>
+
+    <div class="flex flex-col space-y-3">
+      <button 
+        (click)="performSearch()"
+        [disabled]="geminiService.isSearching()"
+        class="w-full bg-sky-600 hover:bg-sky-500 font-bold py-3 rounded-lg transition-colors disabled:bg-sky-800 disabled:cursor-not-allowed flex justify-center items-center"
+      >
+          @if (geminiService.isSearching()) {
+              <app-loader size="sm"></app-loader>
+          } @else {
+              <span>Search Web</span>
+          }
+      </button>
+      <button 
+          (click)="resetFeed()" 
+          class="w-full bg-gray-700 hover:bg-gray-600 font-bold py-3 rounded-lg transition-colors"
+      >
+          Reset to Your Feed
+      </button>
+    </div>
+      @if (geminiService.searchError(); as error) {
+      <p class="text-red-400 text-sm mt-4 text-center">{{ error }}</p>
+    }
+
+    <hr class="border-gray-700 my-6">
+
+    <div>
+      <h3 class="text-lg font-semibold mb-3">Your Influences</h3>
+      <p class="text-sm text-gray-400 mb-4">Select influences to personalize your feed. This helps us show you more of what you love.</p>
+      <div class="flex flex-wrap gap-2">
+          @for(influence of allInfluences; track influence) {
+              <button 
+                  (click)="userProfileService.toggleInfluence(influence)"
+                  class="px-3 py-1.5 text-sm font-medium rounded-full transition-colors"
+                  [class.bg-sky-500]="userProfileService.preferredInfluences().has(influence)"
+                  [class.text-white]="userProfileService.preferredInfluences().has(influence)"
+                  [class.bg-gray-700]="!userProfileService.preferredInfluences().has(influence)"
+                  [class.text-gray-300]="!userProfileService.preferredInfluences().has(influence)"
+                  [class.hover:bg-gray-600]="!userProfileService.preferredInfluences().has(influence)"
+              >
+                  {{influence}}
+              </button>
+          }
+      </div>
+    </div>
+
   </div>
-}
+</div>

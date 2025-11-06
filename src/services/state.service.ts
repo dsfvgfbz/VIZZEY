@@ -1,17 +1,13 @@
-
 import { Injectable, signal } from '@angular/core';
 import { Article } from '../models/article.model';
 
 export type AiTool = 'analyze' | 'create' | 'chat' | 'speak' | null;
-export type SidePanelTab = 'feed' | 'daily' | 'settings' | null;
+export type SidePanelTab = 'feed' | 'daily' | null;
 
 @Injectable({ providedIn: 'root' })
 export class StateService {
   // Main Feed State
   activeArticle = signal<Article | null>(null);
-
-  // Onboarding State
-  onboardingStep = signal<number>(0); // 0 = off, 1, 2, 3... for steps
 
   // AI Panel State
   isAiPanelOpen = signal(false);
