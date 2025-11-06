@@ -1,5 +1,4 @@
-
-import { Component, ChangeDetectionStrategy, inject, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, ElementRef, ViewChild, AfterViewInit, OnDestroy, effect, Injector } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { ArticleService } from '../../services/article.service';
 import { UserProfileService } from '../../services/user-profile.service';
@@ -17,15 +16,27 @@ export class DiscoveryFeedComponent implements AfterViewInit, OnDestroy {
   articleService = inject(ArticleService);
   userProfileService = inject(UserProfileService);
   stateService = inject(StateService);
+  private injector = inject(Injector);
 
   @ViewChild('feedContainer') feedContainer!: ElementRef<HTMLDivElement>;
   private intersectionObserver?: IntersectionObserver;
   private articleIntersectionObserver?: IntersectionObserver;
-  private observedElements = new WeakMap<Element, boolean>();
+  private lastObservedArticleElement: Element | null = null;
 
   ngAfterViewInit() {
     this.setupInfiniteScrollObserver();
     this.setupActiveArticleObserver();
+
+    // This effect replaces the (scroll) listener with a reactive approach.
+    // It runs whenever the list of articles changes and updates the
+    // IntersectionObserver to watch the new last element.
+    effect(() => {
+      // Create a dependency on the articles signal.
+      this.articleService.articles();
+      
+      // The effect runs after the DOM is updated, so we can safely query it.
+      this.observeLastArticle();
+    }, { injector: this.injector }); // Pass the injector to run outside constructor context
   }
 
   private setupInfiniteScrollObserver() {
@@ -42,9 +53,6 @@ export class DiscoveryFeedComponent implements AfterViewInit, OnDestroy {
         }
       });
     }, options);
-
-    // Observe the last element initially
-    this.observeLastArticle();
   }
 
   private setupActiveArticleObserver() {
@@ -78,17 +86,24 @@ export class DiscoveryFeedComponent implements AfterViewInit, OnDestroy {
   }
 
   observeLastArticle() {
-    // We must wait for the view to be updated
-    setTimeout(() => {
-      const articles = this.feedContainer.nativeElement.querySelectorAll('section');
-      if (articles.length > 0) {
-        const lastArticle = articles[articles.length - 1];
-        if (lastArticle && !this.observedElements.has(lastArticle)) {
-            this.intersectionObserver?.observe(lastArticle);
-            this.observedElements.set(lastArticle, true);
-        }
+    if (!this.feedContainer?.nativeElement) {
+      return;
+    }
+
+    const articles = this.feedContainer.nativeElement.querySelectorAll('section');
+    if (articles.length > 0) {
+      const lastArticle = articles[articles.length - 1];
+
+      // Unobserve the previous last element to improve performance.
+      if (this.lastObservedArticleElement) {
+        this.intersectionObserver?.unobserve(this.lastObservedArticleElement);
       }
-    }, 100);
+
+      if (lastArticle) {
+        this.intersectionObserver?.observe(lastArticle);
+        this.lastObservedArticleElement = lastArticle;
+      }
+    }
   }
 
   trackById(index: number, article: Article): string {
@@ -100,9 +115,28 @@ export class DiscoveryFeedComponent implements AfterViewInit, OnDestroy {
     this.userProfileService.toggleLike(articleId);
   }
 
+  handleImageDoubleClick(event: MouseEvent, articleId: string) {
+    event.stopPropagation();
+    this.userProfileService.toggleLike(articleId);
+  }
+
   toggleBookmark(event: MouseEvent, articleId: string) {
     event.stopPropagation();
     this.userProfileService.toggleBookmark(articleId);
+  }
+
+  openAiPanelForArticle(article: Article) {
+    this.stateService.activeArticle.set(article);
+    this.stateService.openAiPanel();
+  }
+
+  openSummaryForArticle(article: Article) {
+    this.stateService.activeArticle.set(article);
+    this.stateService.toggleAiPanel('summarize');
+  }
+
+  refreshPage() {
+    window.location.reload();
   }
 
   ngOnDestroy() {

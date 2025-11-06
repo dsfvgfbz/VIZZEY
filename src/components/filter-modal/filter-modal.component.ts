@@ -1,7 +1,6 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StateService } from '../../services/state.service';
-import { GeminiService } from '../../services/gemini.service';
 import { ArticleService } from '../../services/article.service';
 import { LoaderComponent } from '../loader/loader.component';
 import { UserProfileService } from '../../services/user-profile.service';
@@ -14,11 +13,20 @@ import { UserProfileService } from '../../services/user-profile.service';
 })
 export class FilterModalComponent {
   stateService = inject(StateService);
-  geminiService = inject(GeminiService);
   articleService = inject(ArticleService);
   userProfileService = inject(UserProfileService);
 
-  searchText = signal('');
+  countrySearchTerm = signal('');
+
+  filteredCountries = computed(() => {
+    const term = this.countrySearchTerm().toLowerCase();
+    if (!term) {
+      return this.articleService.availableCountries();
+    }
+    return this.articleService.availableCountries().filter(country =>
+      country.toLowerCase().includes(term)
+    );
+  });
 
   readonly allInfluences = [
     'Sustainability', 'Technology', 'Innovation', 'Minimalism', 'Urbanism',
@@ -26,17 +34,8 @@ export class FilterModalComponent {
     'Brutalism', 'Interior Design', 'Wellbeing'
   ];
 
-  async performSearch() {
-    if (this.searchText().trim().length === 0) return;
-    
-    const results = await this.geminiService.searchForNewsArticles(this.searchText());
-    this.articleService.setSearchResults(results);
-    this.stateService.toggleFilterModal();
-  }
-
-  resetFeed() {
-    this.articleService.loadInitialArticles();
-    this.searchText.set('');
-    this.stateService.toggleFilterModal();
+  onCountrySearch(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.countrySearchTerm.set(input.value);
   }
 }

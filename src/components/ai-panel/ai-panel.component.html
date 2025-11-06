@@ -4,29 +4,60 @@
   [class.translate-y-full]="!stateService.isAiPanelOpen()">
   <div class="bg-gray-900 rounded-t-2xl shadow-lg h-[85vh] flex flex-col">
     <!-- Panel Header -->
-    <div class="p-4 flex items-center justify-between border-b border-gray-800 flex-shrink-0">
-      <div class="flex items-center space-x-4">
-        <button (click)="stateService.toggleAiPanel('analyze')" class="p-2 rounded-lg" [class.bg-sky-500/20]="activeTool() === 'analyze'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </button>
-        <button (click)="stateService.toggleAiPanel('create')" class="p-2 rounded-lg" [class.bg-purple-500/20]="activeTool() === 'create'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-        </button>
-        <button (click)="stateService.toggleAiPanel('chat')" class="p-2 rounded-lg" [class.bg-green-500/20]="activeTool() === 'chat'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-        </button>
-        <button (click)="stateService.toggleAiPanel('speak')" class="p-2 rounded-lg" [class.bg-orange-500/20]="activeTool() === 'speak'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 5.858a3 3 0 114.242 0L12 7.07l1.899-1.899a3 3 0 114.243 4.243L12 15.556l-6.142-6.142a3 3 0 010-4.243z" /></svg>
-        </button>
-      </div>
+    <div class="p-4 flex items-center justify-end border-b border-gray-800 flex-shrink-0">
       <button (click)="stateService.closeAll()" class="p-2 rounded-full hover:bg-white/10">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
       </button>
     </div>
 
     <!-- Panel Content -->
-    <div class="flex-grow overflow-y-auto p-4">
+    <div class="relative flex-grow overflow-y-auto p-4">
+      <!-- Floating Action Buttons -->
+      @if (activeTool()) {
+        <div class="absolute top-4 right-4 flex flex-col space-y-3 z-10">
+           @if (activeTool() !== 'summarize') {
+            <button (click)="stateService.toggleAiPanel('summarize')" class="p-3 rounded-full bg-gray-800/80 backdrop-blur-sm hover:bg-yellow-900/50 transition-colors" title="Summarize Topic">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </button>
+          }
+          @if (activeTool() !== 'analyze') {
+            <button (click)="stateService.toggleAiPanel('analyze')" class="p-3 rounded-full bg-gray-800/80 backdrop-blur-sm hover:bg-sky-900/50 transition-colors" title="Analyze Topic">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </button>
+          }
+          @if (activeTool() !== 'create') {
+            <button (click)="stateService.toggleAiPanel('create')" class="p-3 rounded-full bg-gray-800/80 backdrop-blur-sm hover:bg-purple-900/50 transition-colors" title="Innovate Proposal">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+            </button>
+          }
+          @if (activeTool() !== 'chat') {
+            <button (click)="stateService.toggleAiPanel('chat')" class="p-3 rounded-full bg-gray-800/80 backdrop-blur-sm hover:bg-green-900/50 transition-colors" title="Chat About Topic">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            </button>
+          }
+          @if (activeTool() !== 'speak') {
+            <button (click)="stateService.toggleAiPanel('speak')" class="p-3 rounded-full bg-gray-800/80 backdrop-blur-sm hover:bg-orange-900/50 transition-colors" title="Speak Summary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 5.858a3 3 0 114.242 0L12 7.07l1.899-1.899a3 3 0 114.243 4.243L12 15.556l-6.142-6.142a3 3 0 010-4.243z" /></svg>
+            </button>
+          }
+        </div>
+      }
+
       @switch (activeTool()) {
+        @case ('summarize') {
+          <h2 class="text-2xl font-bold mb-4 text-yellow-300">Article Summary</h2>
+          @if (geminiService.isSummarizing() || summary() === null) {
+            <div class="flex justify-center items-center pt-10"><app-loader></app-loader></div>
+          } @else {
+            <div class="prose prose-invert max-w-none prose-p:text-gray-300 prose-headings:text-white">
+              <p>{{summary()}}</p>
+            </div>
+            <button (click)="searchOnGoogle()" class="mt-6 w-full flex items-center justify-center space-x-2 bg-gray-700 hover:bg-gray-600 font-bold py-3 rounded-lg transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M21.35 11.1H12.18V13.83H18.69C18.36 17.64 15.19 19.27 12.19 19.27C8.36 19.27 5.03 16.25 5.03 12.23C5.03 8.21 8.36 5.19 12.19 5.19C14.04 5.19 15.3 5.92 16.1 6.63L18.27 4.46C16.43 2.84 14.28 2 12.19 2C6.42 2 2.03 6.8 2.03 12.5C2.03 18.2 6.42 23 12.19 23C17.96 23 21.54 18.5 21.54 12.81C21.54 12.21 21.48 11.65 21.35 11.1V11.1Z"/></svg>
+              <span>Search Topic on Google</span>
+            </button>
+          }
+        }
         @case ('analyze') {
           <h2 class="text-2xl font-bold mb-4 text-sky-300">Analyze Topic</h2>
           @if (geminiService.isAnalyzing() && analysisPrompts().length === 0) {
@@ -107,6 +138,34 @@
                 <button (click)="stopSpeech()" class="p-4 bg-gray-600 hover:bg-gray-500 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"></path></svg>
                 </button>
+            </div>
+        }
+        @default {
+            <div class="flex flex-col items-center justify-center h-full text-center p-4">
+                <h2 class="text-2xl font-bold mb-2">AI Assistant</h2>
+                <p class="text-gray-400 mb-6 max-w-sm">Select a tool to interact with the article: <span class="font-semibold text-gray-300">"{{activeArticle()?.headline}}"</span></p>
+                <div class="grid grid-cols-2 gap-4 w-full max-w-md">
+                    <button (click)="stateService.toggleAiPanel('summarize')" class="flex flex-col items-center justify-center p-4 bg-gray-800 rounded-lg hover:bg-yellow-900/50 transition-colors group">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span class="font-semibold text-white">Summarize Article</span>
+                    </button>
+                    <button (click)="stateService.toggleAiPanel('analyze')" class="flex flex-col items-center justify-center p-4 bg-gray-800 rounded-lg hover:bg-sky-900/50 transition-colors group">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="font-semibold text-white">Analyze Topic</span>
+                    </button>
+                    <button (click)="stateService.toggleAiPanel('create')" class="flex flex-col items-center justify-center p-4 bg-gray-800 rounded-lg hover:bg-purple-900/50 transition-colors group">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        <span class="font-semibold text-white">Innovate Proposal</span>
+                    </button>
+                    <button (click)="stateService.toggleAiPanel('chat')" class="flex flex-col items-center justify-center p-4 bg-gray-800 rounded-lg hover:bg-green-900/50 transition-colors group">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        <span class="font-semibold text-white">Chat About Topic</span>
+                    </button>
+                    <button (click)="stateService.toggleAiPanel('speak')" class="flex flex-col items-center justify-center p-4 bg-gray-800 rounded-lg hover:bg-orange-900/50 transition-colors group">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 5.858a3 3 0 114.242 0L12 7.07l1.899-1.899a3 3 0 114.243 4.243L12 15.556l-6.142-6.142a3 3 0 010-4.243z"></path></svg>
+                        <span class="font-semibold text-white">Speak Summary</span>
+                    </button>
+                </div>
             </div>
         }
       }

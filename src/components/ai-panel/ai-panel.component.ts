@@ -1,5 +1,4 @@
-
-import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StateService } from '../../services/state.service';
 import { GeminiService } from '../../services/gemini.service';
@@ -39,18 +38,29 @@ export class AiPanelComponent {
   utterance: SpeechSynthesisUtterance | null = null;
   isSpeaking = signal(false);
 
+  // Summarize State
+  summary = signal<string | null>(null);
+
   constructor() {
     if (typeof window !== 'undefined') {
         this.speechSynthesis = window.speechSynthesis;
     }
+
+    // Use an effect to react to tool changes and initialize it.
+    // This is the correct way to handle side effects from signal changes.
+    effect(() => {
+        const tool = this.activeTool();
+        if (tool) {
+            this.initializeTool(tool);
+        }
+    });
   }
 
   activeArticle = computed(() => this.stateService.activeArticle());
-  activeTool = computed(() => {
-    const tool = this.stateService.activeAiTool();
-    if(tool) { this.initializeTool(tool); }
-    return tool;
-  });
+  
+  // The activeTool is now a direct reference to the signal from the state service.
+  // The side effect (initializing the tool) has been moved to an `effect`.
+  activeTool = this.stateService.activeAiTool;
 
   initializeTool(tool: string) {
     const article = this.activeArticle();
@@ -72,6 +82,10 @@ export class AiPanelComponent {
             break;
         case 'speak':
             this.stopSpeech();
+            break;
+        case 'summarize':
+            this.summary.set(null);
+            this.geminiService.summarizeArticle(article).then(s => this.summary.set(s));
             break;
     }
   }
@@ -141,5 +155,12 @@ export class AiPanelComponent {
   stopSpeech() {
     this.speechSynthesis?.cancel();
     this.isSpeaking.set(false);
+  }
+
+  searchOnGoogle() {
+    const article = this.activeArticle();
+    if (!article) return;
+    const query = encodeURIComponent(`${article.headline} ${article.country} ${article.source}`);
+    window.open(`https://www.google.com/search?q=${query}`, '_blank');
   }
 }

@@ -1,10 +1,10 @@
-<div #feedContainer class="h-full w-full snap-y snap-mandatory overflow-y-scroll overflow-x-hidden scroll-smooth" (scroll)="observeLastArticle()">
+<div #feedContainer class="h-full w-full snap-y snap-mandatory overflow-y-scroll overflow-x-hidden scroll-smooth">
   @for (article of articleService.articles(); track trackById(index, article); let index = $index) {
     <section [attr.data-article-id]="article.id" class="h-full w-full snap-start flex-shrink-0 relative flex items-center justify-center text-white">
       <!-- Image Gallery -->
       <div class="absolute inset-0 flex snap-x snap-mandatory overflow-x-auto">
         @for (image of article.images; track image.url) {
-          <div class="w-full h-full flex-shrink-0 relative snap-center bg-black">
+          <div (dblclick)="handleImageDoubleClick($event, article.id)" class="w-full h-full flex-shrink-0 relative snap-center bg-black">
             <!-- Placeholder with blur overlay -->
             <div class="absolute inset-0">
                 <img [src]="image.placeholder" class="w-full h-full object-cover" alt="Placeholder for {{ article.headline }}">
@@ -29,7 +29,12 @@
         <button (click)="stateService.toggleSidePanel('feed')" class="p-2 rounded-full bg-black/30 hover:bg-white/20 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
         </button>
-        <h1 class="text-xl font-bold tracking-wider">VIZZEY</h1>
+        <button (click)="refreshPage()" class="flex flex-col items-center">
+            <h1 class="text-xl font-bold tracking-wider">VIZZEY</h1>
+            @if(userProfileService.preferredCountries().size === 0) {
+                <span class="text-xs text-gray-400 -mt-1">Worldwide</span>
+            }
+        </button>
         <button (click)="stateService.toggleFilterModal()" class="p-2 rounded-full bg-black/30 hover:bg-white/20 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 12.414V17a1 1 0 01-1.447.894l-2-1A1 1 0 0110 16v-3.586L3.293 6.707A1 1 0 013 6V4z" /></svg>
         </button>
@@ -47,13 +52,15 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
             </div>
         </button>
-        <button (click)="stateService.toggleAiPanel('analyze')" class="flex flex-col items-center text-center">
-            <div class="p-3 rounded-full bg-black/40 backdrop-blur-sm"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <button (click)="openAiPanelForArticle(article)" class="flex flex-col items-center text-center">
+            <div class="p-3 rounded-full bg-black/40 backdrop-blur-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+            </div>
         </button>
       </div>
 
       <!-- Article Info -->
-      <div class="absolute bottom-0 left-0 right-0 p-4 pb-6 z-0 pointer-events-none">
+      <div (click)="openSummaryForArticle(article)" class="absolute bottom-0 left-0 right-0 p-4 pb-6 z-0 cursor-pointer">
         <h2 class="text-3xl font-bold leading-tight mb-2">{{ article.headline }}</h2>
         <p class="text-gray-300 mb-3 text-base leading-snug">{{ article.summary }}</p>
         <div class="flex items-center text-sm text-gray-400 mb-3">

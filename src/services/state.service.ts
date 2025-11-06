@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Article } from '../models/article.model';
 
-export type AiTool = 'analyze' | 'create' | 'chat' | 'speak' | null;
+export type AiTool = 'analyze' | 'create' | 'chat' | 'speak' | 'summarize' | null;
 export type SidePanelTab = 'feed' | 'daily' | null;
 
 @Injectable({ providedIn: 'root' })
@@ -19,6 +19,13 @@ export class StateService {
   // Side Panel State
   isSidePanelOpen = signal(false);
   activeSidePanelTab = signal<SidePanelTab>(null);
+
+  openAiPanel() {
+    this.isAiPanelOpen.set(true);
+    this.activeAiTool.set(null);
+    this.isSidePanelOpen.set(false);
+    this.isFilterModalOpen.set(false);
+  }
 
   toggleAiPanel(tool: AiTool) {
     if (this.isAiPanelOpen() && this.activeAiTool() === tool) {

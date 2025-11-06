@@ -1,4 +1,3 @@
-
 import { Injectable, signal, inject, computed } from '@angular/core';
 import { Article } from '../models/article.model';
 import { LocalArticlesService } from './local-articles.service';
@@ -11,9 +10,9 @@ export class ArticleService {
   private localArticlesService = inject(LocalArticlesService);
   private userProfileService = inject(UserProfileService);
   
-  private allLocalArticles = signal<Article[]>([]);
+  // Make public so DailyVizzey can access it
+  allLocalArticles = signal<Article[]>([]);
   private loadedPages = signal<number>(1);
-  isSearching = signal(false);
   
   // The master list of articles, potentially from a search result or the local list
   masterArticleList = signal<Article[]>([]);
@@ -21,8 +20,30 @@ export class ArticleService {
   // The final, visible list of articles, personalized and paginated
   articles = computed(() => {
     const masterList = this.masterArticleList();
-    const personalizedList = this.personalizeFeed(masterList);
+    const preferredCountries = this.userProfileService.preferredCountries();
+    const preferredInfluences = this.userProfileService.preferredInfluences();
+    
+    // Filter by country
+    const countryFilteredList = preferredCountries.size === 0 
+        ? masterList 
+        : masterList.filter(article => preferredCountries.has(article.country));
+
+    // Filter by influence
+    const influenceFilteredList = preferredInfluences.size === 0
+        ? countryFilteredList
+        : countryFilteredList.filter(article => 
+            article.influences.some(influence => preferredInfluences.has(influence))
+          );
+
+    const personalizedList = this.personalizeFeed(influenceFilteredList);
     return personalizedList.slice(0, this.loadedPages() * PAGE_SIZE);
+  });
+
+  availableCountries = computed(() => {
+    const countries = this.allLocalArticles()
+      .map(a => a.country)
+      .filter(c => c && c !== 'Global' && c !== 'N/A');
+    return [...new Set(countries)].sort();
   });
   
   likedArticles = computed(() => {
@@ -40,23 +61,14 @@ export class ArticleService {
     this.allLocalArticles.set(localArticles);
     this.masterArticleList.set(localArticles);
     this.loadedPages.set(1);
-    this.isSearching.set(false);
   }
 
   loadMoreArticles() {
-    if (!this.isSearching()) {
-        this.loadedPages.update(p => p + 1);
-    }
+    this.loadedPages.update(p => p + 1);
   }
 
-  setSearchResults(articles: Article[]) {
-    this.isSearching.set(true);
-    // For search, we load all results at once
-    this.loadedPages.set(Math.ceil(articles.length / PAGE_SIZE));
-    this.masterArticleList.set(articles);
-  }
-
-  private personalizeFeed(articles: Article[]): Article[] {
+  // Make public so DailyVizzey can access it
+  personalizeFeed(articles: Article[]): Article[] {
     const likedIds = this.userProfileService.likedArticleIds();
     const preferredInfluences = this.userProfileService.preferredInfluences();
 
