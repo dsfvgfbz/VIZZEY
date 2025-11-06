@@ -1,0 +1,12 @@
+
+<div class="h-screen w-screen bg-black font-sans overflow-hidden relative">
+  <app-discovery-feed></app-discovery-feed>
+
+  @if (stateService.onboardingStep() > 0) {
+    <app-onboarding></app-onboarding>
+  }
+  
+  <app-ai-panel></app-ai-panel>
+  <app-filter-modal></app-filter-modal>
+  <app-side-panel></app-side-panel>
+</div>

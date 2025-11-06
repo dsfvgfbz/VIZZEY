@@ -1,0 +1,113 @@
+<div 
+    class="absolute inset-y-0 left-0 w-full md:w-96 bg-gray-900 z-40 transform transition-transform duration-300 ease-in-out"
+    [class.translate-x-0]="stateService.isSidePanelOpen()"
+    [class.-translate-x-full]="!stateService.isSidePanelOpen()"
+>
+    <div class="h-full flex flex-col">
+        <div class="p-4 pt-6 flex justify-between items-center border-b border-gray-800">
+            <h2 class="text-xl font-bold">
+                 @switch(stateService.activeSidePanelTab()) {
+                    @case('feed') { Your Feed }
+                    @case('daily') { Daily Vizzey }
+                    @case('settings') { Settings }
+                 }
+            </h2>
+            <button (click)="stateService.closeAll()" class="p-2 rounded-full hover:bg-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+
+        <div class="flex-grow overflow-y-auto">
+            @switch(stateService.activeSidePanelTab()) {
+                @case ('feed') {
+                    <div class="p-2">
+                        <div class="flex border-b border-gray-700 mb-2">
+                            <button (click)="activeSavedTab = 'liked'" class="flex-1 py-2 text-center font-semibold" [class.text-sky-400]="activeSavedTab === 'liked'" [class.border-b-2]="activeSavedTab === 'liked'" [class.border-sky-400]="activeSavedTab === 'liked'">Liked</button>
+                            <button (click)="activeSavedTab = 'bookmarked'" class="flex-1 py-2 text-center font-semibold" [class.text-sky-400]="activeSavedTab === 'bookmarked'" [class.border-b-2]="activeSavedTab === 'bookmarked'" [class.border-sky-400]="activeSavedTab === 'bookmarked'">Saved</button>
+                        </div>
+                        @if (activeSavedTab === 'liked') {
+                            @for (article of articleService.likedArticles(); track article.id) {
+                                <div class="flex items-center p-2 rounded-lg hover:bg-gray-800">
+                                    <img [ngSrc]="article.images[0].url" width="64" height="64" class="w-16 h-16 object-cover rounded-md mr-4" alt="{{article.headline}}"/>
+                                    <div>
+                                        <h4 class="font-bold line-clamp-2">{{article.headline}}</h4>
+                                        <p class="text-sm text-gray-400">{{article.source}}</p>
+                                    </div>
+                                </div>
+                            } @empty {
+                                <p class="text-center text-gray-400 p-8">You haven't liked any articles yet.</p>
+                            }
+                        } @else {
+                             @for (article of articleService.bookmarkedArticles(); track article.id) {
+                                <div class="flex items-center p-2 rounded-lg hover:bg-gray-800">
+                                    <img [ngSrc]="article.images[0].url" width="64" height="64" class="w-16 h-16 object-cover rounded-md mr-4" alt="{{article.headline}}"/>
+                                    <div>
+                                        <h4 class="font-bold line-clamp-2">{{article.headline}}</h4>
+                                        <p class="text-sm text-gray-400">{{article.source}}</p>
+                                    </div>
+                                </div>
+                            } @empty {
+                                <p class="text-center text-gray-400 p-8">You haven't saved any articles yet.</p>
+                            }
+                        }
+                    </div>
+                }
+                @case ('daily') {
+                    <div class="p-4">
+                        @if (dailyVizzeyService.isLoading()) {
+                            <div class="flex justify-center items-center h-64"><app-loader></app-loader></div>
+                        } @else if (dailyVizzeyService.dailyVizzey(); as vizzey) {
+                            <h3 class="text-2xl font-bold mb-4 text-sky-300">{{vizzey.title}}</h3>
+                            <div class="space-y-4">
+                                @for(article of vizzey.articles; track article.id) {
+                                     <div class="flex items-center p-2 rounded-lg hover:bg-gray-800">
+                                        <img [ngSrc]="article.images[0].url" width="80" height="80" class="w-20 h-20 object-cover rounded-md mr-4" alt="{{article.headline}}"/>
+                                        <div>
+                                            <h4 class="font-bold line-clamp-2">{{article.headline}}</h4>
+                                            <p class="text-sm text-gray-400">{{article.source}}</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        } @else {
+                            <p class="text-center text-gray-400 p-8">Could not load the Daily Vizzey. Please try again later.</p>
+                        }
+                    </div>
+                }
+                @case ('settings') {
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold mb-3">Your Influences</h3>
+                        <p class="text-sm text-gray-400 mb-4">Select influences to personalize your feed. This helps us show you more of what you love.</p>
+                        <div class="flex flex-wrap gap-2">
+                            @for(influence of allInfluences; track influence) {
+                                <button 
+                                    (click)="userProfileService.toggleInfluence(influence)"
+                                    class="px-3 py-1.5 text-sm font-medium rounded-full transition-colors"
+                                    [class.bg-sky-500]="userProfileService.preferredInfluences().has(influence)"
+                                    [class.text-white]="userProfileService.preferredInfluences().has(influence)"
+                                    [class.bg-gray-700]="!userProfileService.preferredInfluences().has(influence)"
+                                    [class.text-gray-300]="!userProfileService.preferredInfluences().has(influence)"
+                                    [class.hover:bg-gray-600]="!userProfileService.preferredInfluences().has(influence)"
+                                >
+                                    {{influence}}
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        
+        <div class="p-2 border-t border-gray-800 flex justify-around">
+            <button (click)="stateService.toggleSidePanel('feed')" class="p-3 rounded-lg hover:bg-white/10" [class.bg-white/10]="stateService.activeSidePanelTab() === 'feed'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+            </button>
+             <button (click)="stateService.toggleSidePanel('daily')" class="p-3 rounded-lg hover:bg-white/10" [class.bg-white/10]="stateService.activeSidePanelTab() === 'daily'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </button>
+             <button (click)="stateService.toggleSidePanel('settings')" class="p-3 rounded-lg hover:bg-white/10" [class.bg-white/10]="stateService.activeSidePanelTab() === 'settings'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
+        </div>
+    </div>
+</div>

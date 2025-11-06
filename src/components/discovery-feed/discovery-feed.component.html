@@ -1,0 +1,72 @@
+<div #feedContainer class="h-full w-full snap-y snap-mandatory overflow-y-scroll overflow-x-hidden scroll-smooth" (scroll)="observeLastArticle()">
+  @for (article of articleService.articles(); track trackById(index, article); let index = $index) {
+    <section [attr.data-article-id]="article.id" class="h-full w-full snap-start flex-shrink-0 relative flex items-center justify-center text-white">
+      <!-- Image Gallery -->
+      <div class="absolute inset-0 flex snap-x snap-mandatory overflow-x-auto">
+        @for (image of article.images; track image.url) {
+          <div class="w-full h-full flex-shrink-0 relative snap-center bg-black">
+            <!-- Placeholder with blur overlay -->
+            <div class="absolute inset-0">
+                <img [src]="image.placeholder" class="w-full h-full object-cover" alt="Placeholder for {{ article.headline }}">
+                <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+            </div>
+
+            <!-- Main image -->
+            <img [ngSrc]="image.url" 
+                 fill 
+                 [priority]="index < 2" 
+                 class="object-cover feed-image" 
+                 alt="Full resolution image for {{ article.headline }}">
+          </div>
+        }
+      </div>
+
+      <!-- Gradient Overlay -->
+      <div class="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+
+      <!-- Header actions -->
+      <div class="absolute top-0 left-0 right-0 p-4 pt-6 flex justify-between items-center z-10">
+        <button (click)="stateService.toggleSidePanel('feed')" class="p-2 rounded-full bg-black/30 hover:bg-white/20 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+        </button>
+        <h1 class="text-xl font-bold tracking-wider">VIZZEY</h1>
+        <button (click)="stateService.toggleFilterModal()" class="p-2 rounded-full bg-black/30 hover:bg-white/20 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        </button>
+      </div>
+
+      <!-- Side Action Buttons -->
+      <div class="absolute right-4 bottom-24 flex flex-col items-center space-y-4 z-10">
+        <button (click)="toggleLike($event, article.id)" class="flex flex-col items-center text-center">
+            <div class="p-3 rounded-full bg-black/40 backdrop-blur-sm transition-colors" [class.bg-red-500/80]="userProfileService.likedArticleIds().has(article.id)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </div>
+        </button>
+         <button (click)="toggleBookmark($event, article.id)" class="flex flex-col items-center text-center">
+            <div class="p-3 rounded-full bg-black/40 backdrop-blur-sm transition-colors" [class.bg-sky-500/80]="userProfileService.bookmarkedArticleIds().has(article.id)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+        </button>
+        <button (click)="stateService.toggleAiPanel('analyze')" class="flex flex-col items-center text-center">
+            <div class="p-3 rounded-full bg-black/40 backdrop-blur-sm"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        </button>
+      </div>
+
+      <!-- Article Info -->
+      <div class="absolute bottom-0 left-0 right-0 p-4 pb-6 z-0 pointer-events-none">
+        <h2 class="text-3xl font-bold leading-tight mb-2">{{ article.headline }}</h2>
+        <p class="text-gray-300 mb-3 text-base leading-snug">{{ article.summary }}</p>
+        <div class="flex items-center text-sm text-gray-400 mb-3">
+            <span>{{ article.source }}</span>
+            <span class="mx-2">&middot;</span>
+            <span>{{ article.country }}</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            @for (influence of article.influences; track influence) {
+              <span class="px-2 py-1 bg-white/10 text-white text-xs font-semibold rounded-full">{{ influence }}</span>
+            }
+        </div>
+      </div>
+    </section>
+  }
+</div>

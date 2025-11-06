@@ -1,0 +1,20 @@
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* 
+  Custom fade-in for feed images.
+  When NgOptimizedImage is loading, we set its opacity to 0.
+  Once loaded, NgOptimizedImage adds the `.ng-lazyloaded` class.
+  We use this class to smoothly transition the opacity to 1.
+*/
+img.feed-image[ng-img] {
+  opacity: 0;
+  transition: opacity 750ms ease-in-out;
+}
+
+img.feed-image.ng-lazyloaded {
+  opacity: 1;
+}
